@@ -33,9 +33,7 @@
 
         .stats { display: flex; justify-content: space-between; align-items: center; background: #eee; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; font-size: 16px;}
         
-        .timer-container { color: #d35400; background: #fdebd0; padding: 5px 15px; border-radius: 8px; border: 2px solid #f39c12; }
-        .timer-warning { color: white; background: #c0392b; border-color: #922b21; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
 
         .question { font-size: 19px; color: var(--secondary); line-height: 1.6; margin-bottom: 25px; border-right: 5px solid #2980b9; padding-right: 15px; }
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -79,7 +77,6 @@
         <h1 id="quiz-title">الاختبار</h1>
         <div class="stats">
             <span>السؤال: <span id="q-num">1</span> / <span id="total-qs">0</span></span>
-            <div id="timer-box" class="timer-container">⏱️ الوقت: <span id="time-left">45</span> ث</div>
             <span>النتيجة: <span id="score">0</span></span>
         </div>
         <div id="question" class="question">جاري تحميل السؤال...</div>
@@ -299,9 +296,7 @@ let questions = [];
 let currentQIndex = 0;
 let score = 0;
 let userAnswers = [];
-let timerInterval;
-const TIME_LIMIT = 45; // تم زيادة الوقت لـ 45 ثانية لأن الأسئلة هنا أعمق وتحتاج قراءة
-let timeLeft = TIME_LIMIT;
+
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -339,55 +334,8 @@ function startQuiz() {
     loadQuestion();
 }
 
-function startTimer() {
-    timeLeft = TIME_LIMIT;
-    document.getElementById("time-left").innerText = timeLeft;
-    
-    const timerBox = document.getElementById("timer-box");
-    timerBox.classList.remove("timer-warning");
 
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById("time-left").innerText = timeLeft;
 
-        if (timeLeft <= 5) {
-            timerBox.classList.add("timer-warning");
-        }
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            handleTimeOut();
-        }
-    }, 1000);
-}
-
-function handleTimeOut() {
-    const allBtns = document.querySelectorAll(".option");
-    allBtns.forEach(b => b.disabled = true);
-
-    const currentQData = questions[currentQIndex];
-
-    userAnswers.push({
-        q: currentQData.q,
-        options: currentQData.a,
-        selected: "لم يتم الإجابة (انتهى الوقت) ❌",
-        correct: currentQData.c
-    });
-
-    allBtns.forEach(b => {
-        if (b.getAttribute("data-ans") === currentQData.c) {
-            b.classList.add("correct");
-        } else {
-            b.style.opacity = "0.5";
-        }
-    });
-
-    setTimeout(() => {
-        currentQIndex++;
-        loadQuestion();
-    }, 1500);
-}
 
 function loadQuestion() {
     if (currentQIndex >= questions.length) {
@@ -415,11 +363,9 @@ function loadQuestion() {
         optionsDiv.appendChild(btn);
     });
 
-    startTimer();
 }
 
 function checkAnswer(btn, selected, correct) {
-    clearInterval(timerInterval);
 
     const allBtns = document.querySelectorAll(".option");
     allBtns.forEach(b => b.disabled = true);
@@ -452,7 +398,6 @@ function checkAnswer(btn, selected, correct) {
 }
 
 function showResults() {
-    clearInterval(timerInterval); 
     document.getElementById("quiz-box").style.display = "none";
     document.getElementById("result-box").style.display = "block";
     document.getElementById("final-res").innerText = score + " / " + questions.length;
